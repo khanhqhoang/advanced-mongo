@@ -30,10 +30,27 @@ router.get("/:id", async (req, res, next) => {
   res.status(resultStatus).send(result);
 
 });
-
-// curl http://localhost:5000/movies/000/comments
+//find movie by genre
+//curl http://localhost:5000/movies/genres/Short
+router.get("/genres/:genreName", async (req, res, next) => {
+  const result = await movieData.getByGenre(req.params.genreName);
+  if(result.error){
+    resultStatus = 404;
+  } else {
+    resultStatus = 200;
+  }
+  res.status(resultStatus).send(result);
+});
+//get all comments for a movie id
+// curl http://localhost:5000/movies/573a1391f29313caabcd8978/comments
 router.get("/:id/comments", async(req, res) => {
   const result = await movieData.getAllComments(req.params.id)
+  res.status(200).send(result);
+})
+//get a comment by commentId
+// curl http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
+router.get("/comments/:id", async(req, res) => {
+  const result = await movieData.getCommentById(req.params.id);
   res.status(200).send(result);
 })
 
@@ -67,11 +84,28 @@ router.put("/:id", async (req, res, next) => {
   } else {
     resultStatus = 200;
   }
-
   res.status(resultStatus).send(result);
 });
 
-// curl -X DELETE http://localhost:5000/movies/573a1390f29313caabcd4135
+// curl -X PUT -H "Content-Type: application/json" -d '{"text":"Test..."}' http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
+router.put("/comments/:id", async (req, res, next) => {
+
+  let resultStatus;
+  //validate valid text param
+  if(!req.body.text)
+  {
+    resultStatus = 400;
+    res.status(resultStatus).send({error: 'Invalid comment text!'});
+  } 
+  else 
+  {
+    resultStatus = 200;
+    const result = await movieData.updateCommentById(req.params.id, req.body);
+    res.status(resultStatus).send(result);
+  }
+  
+ 
+});
 router.delete("/:id", async (req, res, next) => {
   const result = await movieData.deleteById(req.params.id);
 
@@ -87,7 +121,12 @@ router.delete("/:id", async (req, res, next) => {
 // curl -X DELETE http://localhost:5000/movies/000/comments/000
 router.delete("/:movieId/comments/:commentId", async(req, res)=>{
   const result = await movieData.deleteCommentById(req.params.commentId)
-  res.status(200).send(result);
+  if(result.error){
+    resultStatus = 400;
+  } else {
+    resultStatus = 200;
+  }
+  res.status(resultStatus).send(result);
 })
 
 module.exports = router;

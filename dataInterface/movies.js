@@ -2,7 +2,7 @@ const { MongoClient } = require("mongodb");
 const ObjectId = require('mongodb').ObjectId;
 
 const uri =
-  "mongodb+srv://APIsuperuser:9RbwKvA8DpBkJgb9@cluster0.bwarser.mongodb.net/?retryWrites=true&w=majority";
+"mongodb+srv://dbadmin:dbadminpw@cluster0.fh6sx.mongodb.net/?retryWrites=true&w=majority";
 
 const client = new MongoClient(uri);
 
@@ -44,6 +44,38 @@ module.exports.getById = async (movieId) => {
   let movie = await movies.findOne(query);
 
   return movie;
+}
+module.exports.getCommentById = async (commentId) => {
+  const database = client.db(databaseName);
+  const comments = database.collection(commCollName);
+  const query = {_id: ObjectId(commentId)};
+  let comment = await comments.findOne(query);
+  if(comment){
+    return comment;
+  } else {
+    return {error: `No comment found with commentId ${commentId}.`}
+  }
+}
+module.exports.getByGenre = async (genre) => {
+  const database = client.db(databaseName);
+  const movies = database.collection(collName);
+  const query = { genres: { $in: [ genre ] } };
+
+  const options = { 
+    sort: { _id: 1},
+    projection: { _id: 1, title: 1, genres: 1},
+    limit: 10
+  }
+  let movieList = await movies.find(query, options);
+  if (movieList)
+  {
+    return movieList.toArray();
+  }
+  else
+  {
+    return {error: `No movie found with ${genre}`}
+  }
+  
 }
 
 module.exports.getByTitle = async (title) => {
@@ -93,16 +125,25 @@ module.exports.createComment = async(movieId, newObj) =>{
   // TODO: Validate that movieId is for an existing movie
   const database = client.db(databaseName);
   const comments = database.collection(commCollName);
+  if (module.exports.getById(movieId))
+  {
+    const goodObj = {...newObj, movie_id: ObjectId(movieId), date: new Date()};
 
-  const goodObj = {...newObj, movie_id: ObjectId(movieId), date: new Date()}
+    const result = await comments.insertOne(goodObj);
 
-  const result = await comments.insertOne(goodObj);
-
-  if(result.acknowledged){
-    return { newObjectId: result.insertedId, message: `Comment created! ID: ${result.insertedId}` }
-  } else {
-    return {error: "Something went wrong. Please try again."}
+    if(result.acknowledged)
+    {
+      return { newObjectId: result.insertedId, message: `Comment created! ID: ${result.insertedId}` };
+    } 
+    else 
+    {
+      return {error: "Something went wrong. Please try again."};
+    }
   }
+  else 
+  {
+    return {error: "Valid movieid is required. Please try again."}
+  }  
 }
 
 // https://www.mongodb.com/docs/drivers/node/current/fundamentals/crud/write-operations/change-a-document/
@@ -118,11 +159,32 @@ module.exports.updateById = async (movieId, newObj) => {
   const result = await movies.updateOne(filter, updateRules);
 
   if(result.modifiedCount != 1){
-    return {error: `Something went wrong. ${result.modifiedCount} movies were updated. Please try again.`}
+    return {error: `Something went wrong. ${result.modifiedCount} movies were not updated. Please try again.`}
   };
 
   const updatedMovie = module.exports.getById(movieId);
   return updatedMovie;
+}
+//Update a comment by commentId
+//curl -X PUT -H "Content-Type: application/json" -d '{"text":"Test..."}' http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
+module.exports.updateCommentById = async(commentId, newObj) => {
+  const database = client.db(databaseName);
+  const comments = database.collection(commCollName);
+
+  // Product team says only these two fields can be updated.
+  const updateRules = {
+    $set: {"text" : newObj.text, "date": new Date()}
+  };
+  const filter = { _id: ObjectId(commentId) };
+
+  const result = await comments.updateOne(filter, updateRules);
+
+  if(result.modifiedCount != 1){
+    return {error: `Something went wrong. ${result.modifiedCount} comments were not updated. Please try again.`}
+  }
+  const updatedComment = await module.exports.getCommentById(commentId);
+  return updatedComment;
+
 }
 
 // https://www.mongodb.com/docs/drivers/node/current/fundamentals/crud/write-operations/delete/
@@ -140,7 +202,17 @@ module.exports.deleteById = async (movieId) => {
   return {message: `Deleted ${result.deletedCount} movie.`};
 }
 
-module.exports.deleteCommentById = async(id) =>{
-  // TODO: Implement
-  return {};
+module.exports.deleteCommentById = async(commentId) =>{
+  // TODO: Delete a comment by commentid
+  const database = client.db(databaseName);
+  const comments = database.collection(commCollName);
+
+  const deletionRules = {_id:ObjectId(commentId)}
+  const result = await comments.deleteOne(deletionRules);
+  if(result.deletedCount != 1){
+    return {error: `Something went wrong. ${result.deletedCount} comments were not deleted. Please try again.`}
+  };
+
+  return {message: `Deleted ${result.deletedCount} comment.`};
+
 }
