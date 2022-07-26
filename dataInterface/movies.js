@@ -67,6 +67,7 @@ module.exports.getByGenre = async (genre) => {
     limit: 10
   }
   let movieList = await movies.find(query, options);
+  /** 
   if (movieList)
   {
     return movieList.toArray();
@@ -75,6 +76,12 @@ module.exports.getByGenre = async (genre) => {
   {
     return {error: `No movie found with ${genre}`}
   }
+  **/
+  return movieList
+  ? movieList.toArray()
+  : {
+      error: `We've encountered an error. Please try again later.`,
+    };
   
 }
 
@@ -166,7 +173,7 @@ module.exports.updateById = async (movieId, newObj) => {
   return updatedMovie;
 }
 //Update a comment by commentId
-//curl -X PUT -H "Content-Type: application/json" -d '{"text":"Test..."}' http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
+
 module.exports.updateCommentById = async(commentId, newObj) => {
   const database = client.db(databaseName);
   const comments = database.collection(commCollName);
