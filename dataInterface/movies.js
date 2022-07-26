@@ -67,16 +67,7 @@ module.exports.getByGenre = async (genre) => {
     limit: 10
   }
   let movieList = await movies.find(query, options);
-  /** 
-  if (movieList)
-  {
-    return movieList.toArray();
-  }
-  else
-  {
-    return {error: `No movie found with ${genre}`}
-  }
-  **/
+
   return movieList
   ? movieList.toArray()
   : {

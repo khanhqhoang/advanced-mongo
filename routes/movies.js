@@ -132,8 +132,6 @@ router.put("/comments/:id", async (req, res, next) => {
     const result = await movieData.updateCommentById(req.params.id, req.body);
     res.status(resultStatus).send(result);
   }
-  
- 
 });
 // curl -X DELETE http://localhost:5000/movies/000
 router.delete("/:id([0-9a-fA-F]{24})", async (req, res, next) => {
