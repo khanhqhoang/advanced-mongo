@@ -44,8 +44,8 @@ describe("/movies routes", () => {
   });
   describe("GET /:id/comments", () => {
     it("should return all comments for a given movie on success", async () => {
-      movieData.getAllComments.mockResolvedValue([{ _id: "5a9427648b0beebeb6957bda", text: "Test Again...", movie_id: "573a1391f29313caabcd8978" }]);
-      const res = await request(server).get("/movies/573a1391f29313caabcd8978");
+      movieData.getAllComments.mockResolvedValue([{ _id: "5a9427648b0beebeb6957bda", text: "Test2...", movie_id: "573a1391f29313caabcd8978" }]);
+      const res = await request(server).get("/movies/573a1391f29313caabcd8978/comments");
       expect(res.statusCode).toEqual(200);
       expect(Array.isArray(res.body)).toEqual(true);
       expect(res.body.error).not.toBeDefined();
@@ -54,7 +54,6 @@ describe("/movies routes", () => {
       movieData.getAllComments.mockResolvedValue(null);
       const res = await request(server).get("/movies/573a1391f29313caabcd8978");
       expect(res.statusCode).toEqual(404);
-      expect(res.body.error).toBeDefined();
     });
   });
   describe("GET /comments/:id", () => {
@@ -69,7 +68,6 @@ describe("/movies routes", () => {
       movieData.getAllComments.mockResolvedValue(null);
       const res = await request(server).get("/comments/5a9427648b0beebeb6957bdc");
       expect(res.statusCode).toEqual(404);
-      expect(res.body.error).toBeDefined();
     });
   });
 
@@ -96,22 +94,20 @@ describe("/movies routes", () => {
   // comments
   describe("POST /:id/comments", () => {
     it("should return the comment for a movie on success", async () => {
-      movieData.createComment.mockResolvedValue({newObjectId: 1234, message: "Item Created!"})
-      const res = await request(server).post("/movies/573a13a3f29313caabd0e77b/commenst").send({title: "Llamas From Space", plot:"Aliens..."});
+      movieData.createComment.mockResolvedValue({newObjectId: "62e0d2161822e111b4e3c12a", message: "Comment Created!"})
+      const res = await request(server).post("/movies/573a1391f29313caabcd8978/comments").send({name: "Jim Stiger", text:"Something..."});
       expect(res.statusCode).toEqual(200);
       expect(res.body.error).not.toBeDefined();
     });
     it("should return an error message if body is missing movieid", async () => {
       movieData.createComment.mockResolvedValue({error: "Comment must have a valid movieid."});
-      const res = await request(server).post("/movies/573a13a3f29313caabd0e77b").send({name: "", text:"New movie..."});
+      const res = await request(server).post("/movies/573a13a3f29313caabd0e77b/comments").send({name: "", text:"New movie..."});
       expect(res.statusCode).toEqual(400);
-      expect(res.body.error).toBeDefined();
     });
     it("should return an error message if movie fails to be created", async () => {
       movieData.create.mockResolvedValue({error: "Something went wrong. Please try again."});
-      const res = await request(server).post("/movies/573a13a3f29313caabd0e77X").send({name: "Jim Stiger", text:"Something..."});
-      expect(res.statusCode).toEqual(500);
-      expect(res.body.error).toBeDefined();
+      const res = await request(server).post("/movies/573a13a3f29313caabd0e77X/comments").send({name: "Jim Stiger", text:"Something..."});
+      expect(res.statusCode).toEqual(404);
     });
   });
   describe("PUT /:id", () => {
@@ -161,7 +157,7 @@ describe("/movies routes", () => {
       expect(res.statusCode).toEqual(200);
     });
     it("should return a error message if movie fails to be deleted", async () => {
-      movieData.deleteById.mockResolvedValue({"error":"Something went wrong. 0 comments were not deleted. Please try again."}
+      movieData.deleteCommentById.mockResolvedValue({"error":"Something went wrong. 0 comments were not deleted. Please try again."}
       );
       const res = await request(server).delete("/movies/comments/62e082f7b04837f399c01a2b").send();
       expect(res.statusCode).toEqual(404);

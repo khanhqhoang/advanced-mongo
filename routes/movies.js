@@ -67,27 +67,21 @@ router.get("/:id/comments", async(req, res) => {
   let resultStatus;
   const result = await movieData.getAllComments(req.params.id);
 
-  if(result){
-    if (result.length >0)
-    {
-      resultStatus = 200;
-      res.status(resultStatus).send(result);
-    }
-    else {
-      resultStatus = 400;
-      res.status(404).send({message: `No comment found with the movie id: ${req.params.id}`});
-    }
-  }
-  else
+  if (result)
   {
-    resultStatus = 500;
-    res.status(500).send({error: "Something went wrong. Please try again."});
+    resultStatus = 200;
+    res.status(resultStatus).send(result);
   }
-    
+  else 
+  {
+    resultStatus = 404;
+    res.status(resultStatus).send({message: `No comment found with the movie id: ${req.params.id}`});
+  }
+     
 })
 //get a comment by commentId
 // curl http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
-router.get("/comments/:id", async(req, res) => {
+router.get("/comments/:id([0-9a-fA-F]{24})", async(req, res) => {
   let resultStatus;
   const result = await movieData.getCommentById(req.params.id);
   if (result)
@@ -100,6 +94,7 @@ router.get("/comments/:id", async(req, res) => {
     resultStatus = 404;
     res.status(resultStatus).send(result);
   }
+  console.log(resultStatus);
 })
 
 // curl -X POST -H "Content-Type: application/json" -d '{"title":"Llamas From Space", "plot":"Aliens..."}' http://localhost:5000/movies
@@ -116,7 +111,7 @@ router.post("/", async (req, res, next) => {
   res.status(resultStatus).send(result);
 });
 
-// curl -X POST -H "Content-Type: application/json" -d '{"name":"Cinephile Cyprus", "text":"Wow!"}' http://localhost:5000/movies/000/comments
+// curl -X POST -H "Content-Type: application/json" -d '{"name":"Cinephile Cyprus", "text":"Wow!"}' http://localhost:5000/movies/573a1391f29313caabcd8978/comments
 router.post("/:id([0-9a-fA-F]{24})/comments", async(req, res) => {
   let resultStatus
   //validate name
@@ -127,15 +122,15 @@ router.post("/:id([0-9a-fA-F]{24})/comments", async(req, res) => {
   }
   else {
     const result = await movieData.createComment(req.params.id, req.body);
-    if (result)
+    if(result.error)
+    {
+      resultStatus = 400;
+      res.status(resultStatus).send({error: "Something went wrong. Please try again."});
+    } 
+    else 
     {
       resultStatus = 200;
       res.status(resultStatus).send(result);
-    }
-    else
-    {
-      resultStatus = 500;
-      res.status(resultStatus).send({error: "Something went wrong. Please try again."});
     }
   }
   
@@ -200,7 +195,7 @@ router.delete("/:id([0-9a-fA-F]{24})", async (req, res, next) => {
 router.delete("/comments/:commentId([0-9a-fA-F]{24})", async(req, res)=>{
   const result = await movieData.deleteCommentById(req.params.commentId)
   if(result.error){
-    resultStatus = 400;
+    resultStatus = 404;
   } else {
     resultStatus = 200;
   }
