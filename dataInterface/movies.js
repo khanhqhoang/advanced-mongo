@@ -1,3 +1,4 @@
+
 const { MongoClient } = require("mongodb");
 const ObjectId = require('mongodb').ObjectId;
 
@@ -214,3 +215,16 @@ module.exports.deleteCommentById = async(commentId) =>{
   return {message: `Deleted ${result.deletedCount} comment.`};
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

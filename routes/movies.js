@@ -63,20 +63,49 @@ router.get("/genres/:genreName", async (req, res, err) => {
 //get all comments for a movie id
 // curl http://localhost:5000/movies/573a1391f29313caabcd8978/comments
 router.get("/:id/comments", async(req, res) => {
-  const result = await movieData.getAllComments(req.params.id)
-  res.status(200).send(result);
+  
+  let resultStatus;
+  const result = await movieData.getAllComments(req.params.id);
+
+  if(result){
+    if (result.length >0)
+    {
+      resultStatus = 200;
+      res.status(resultStatus).send(result);
+    }
+    else {
+      resultStatus = 400;
+      res.status(404).send({message: `No comment found with the movie id: ${req.params.id}`});
+    }
+  }
+  else
+  {
+    resultStatus = 500;
+    res.status(500).send({error: "Something went wrong. Please try again."});
+  }
+    
 })
 //get a comment by commentId
 // curl http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
 router.get("/comments/:id", async(req, res) => {
+  let resultStatus;
   const result = await movieData.getCommentById(req.params.id);
-  res.status(200).send(result);
+  if (result)
+  {
+    resultStatus = 200;
+    res.status(resultStatus).send(result);
+  }
+  else
+  {
+    resultStatus = 404;
+    res.status(resultStatus).send(result);
+  }
 })
 
 // curl -X POST -H "Content-Type: application/json" -d '{"title":"Llamas From Space", "plot":"Aliens..."}' http://localhost:5000/movies
 router.post("/", async (req, res, next) => {
   let resultStatus;
-  let result = await movieData.create(req.body);
+  const result = await movieData.create(req.body);
 
   if(result.error){
     resultStatus = 400;
@@ -88,9 +117,28 @@ router.post("/", async (req, res, next) => {
 });
 
 // curl -X POST -H "Content-Type: application/json" -d '{"name":"Cinephile Cyprus", "text":"Wow!"}' http://localhost:5000/movies/000/comments
-router.post("/:id/comments", async(req, res) => {
-  const result = await movieData.createComment(req.params.id, req.body)
-  res.status(200).send(result);
+router.post("/:id([0-9a-fA-F]{24})/comments", async(req, res) => {
+  let resultStatus
+  //validate name
+  if (req.body.name ==="")
+  {
+    resultStatus = 400;
+    res.status(resultStatus).send({error: "Comment must have a valid movieid."});
+  }
+  else {
+    const result = await movieData.createComment(req.params.id, req.body);
+    if (result)
+    {
+      resultStatus = 200;
+      res.status(resultStatus).send(result);
+    }
+    else
+    {
+      resultStatus = 500;
+      res.status(resultStatus).send({error: "Something went wrong. Please try again."});
+    }
+  }
+  
 })
 
 // curl -X PUT -H "Content-Type: application/json" -d '{"title": "Shark...","plot":"Sharks..."}' http://localhost:5000/movies/573a13a3f29313caabd0e77b
@@ -99,13 +147,12 @@ router.put("/:id([0-9a-fA-F]{24})", async (req, res, err) => {
   try
   {
     const result = await movieData.updateById(req.params.id, req.body)
-
+    console.log(result);
     if(result.error){
       resultStatus = 400;
     } else {
       resultStatus = 200;
     }
-    console.log(resultStatus)
     res.status(resultStatus).send(result);
   }
   catch (err)
@@ -117,13 +164,13 @@ router.put("/:id([0-9a-fA-F]{24})", async (req, res, err) => {
 });
 
 // curl -X PUT -H "Content-Type: application/json" -d '{"text":"Test..."}' http://localhost:5000/movies/comments/5a9427648b0beebeb6957bda
-router.put("/comments/:id", async (req, res, next) => {
+router.put("/comments/:id([0-9a-fA-F]{24})", async (req, res, next) => {
 
   let resultStatus;
   //validate valid text param
   if(!req.body.text)
   {
-    resultStatus = 400;
+    resultStatus = 404;
     res.status(resultStatus).send({error: 'Invalid comment text!'});
   } 
   else 
@@ -149,8 +196,8 @@ router.delete("/:id([0-9a-fA-F]{24})", async (req, res, next) => {
   res.status(resultStatus).send(result);
 });
 
-// curl -X DELETE http://localhost:5000/movies/000/comments/000
-router.delete("/:movieId/comments/:commentId", async(req, res)=>{
+//  curl -X DELETE http://localhost:5000/movies/comments/62e082f7b04837f399c01a2b
+router.delete("/comments/:commentId([0-9a-fA-F]{24})", async(req, res)=>{
   const result = await movieData.deleteCommentById(req.params.commentId)
   if(result.error){
     resultStatus = 400;
