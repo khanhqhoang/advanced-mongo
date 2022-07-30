@@ -10,14 +10,18 @@ router.use(bodyParser.json());
 // get weather by callLetters
 // "curl http://localhost:5000/weather/PLAT"
 router.get("/:callCenters", async (req, res, next) => {
-
+  let statusCode
   let weatherList = await weatherData.getWeather(req.params.callCenters);
 
   if (weatherList) {
-    res.status(200).send(weatherList);
-  } else {
+    statusCode = 200
+    res.status(statusCode).send(weatherList);
+  } 
+  else 
+  {
+    statusCode = 422
     // If weatherList is empty/null, something serious is wrong with the MongoDB connection.
-    res.status(500).send({ error: "Something went wrong. Please try again." });
+    res.status(statusCode).send({ error: "Something went wrong. Please try again." });
   }
 });
 
@@ -60,7 +64,9 @@ router.post("/", async (req, res, next) => {
 
   if(result.error){
     resultStatus = 400;
-  } else {
+  } 
+  else 
+  {
     resultStatus = 200;
   }
 

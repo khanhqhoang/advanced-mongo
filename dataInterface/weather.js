@@ -12,12 +12,12 @@ const collName = 'data';
 module.exports = {}
 //getWeather by CallCenters
 // https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
-module.exports.getWeather = async (callLetterId) => {
+module.exports.getWeather = async (callLetters) => {
   const database = client.db(databaseName);
   const weather = database.collection(collName);
 
-  const query = { callLetters: callLetterId};
-  let weatherCursor = await weather.find(query).limit(2);
+  const query = { callLetters: callLetters};
+  let weatherCursor = await weather.find(query).limit(10);
 
   return weatherCursor.toArray();
 }
@@ -32,12 +32,11 @@ module.exports.searchWeather = async (queryObject) => {
     limit: 10
   }
 
- 
   try
   {
      //validate queryObject
     queryOpt = validateQueryObject(queryObject);
-    console.log(queryOpt);
+    //console.log(queryOpt);
     let weatherList = await weather.find(queryOpt, options);
 
     return weatherList
