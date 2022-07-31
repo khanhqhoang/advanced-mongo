@@ -21,6 +21,17 @@ module.exports.getWeather = async (callLetters) => {
 
   return weatherCursor.toArray();
 }
+//getWeatherCount by CallCenters
+module.exports.getWeatherCount = async (callLetters) => {
+  const database = client.db(databaseName);
+  const weather = database.collection(collName);
+  //use pipeline operation: $match and $group 
+  //and aggregation function: $sum on callLetters
+  const query = [ {"$match": { "callLetters": callLetters }},{"$group": {"_id": {"callLetters" : "$callLetters"}, "Total_count_of_callLetters": {"$sum": 1}}}];
+  let weatherCursor = await weather.aggregate(query).limit(20);
+
+  return weatherCursor.toArray();
+}
 //searchWeather by one or more params
 module.exports.searchWeather = async (queryObject) => {
   const database = client.db(databaseName);
@@ -36,14 +47,21 @@ module.exports.searchWeather = async (queryObject) => {
   {
      //validate queryObject
     queryOpt = validateQueryObject(queryObject);
-    //console.log(queryOpt);
-    let weatherList = await weather.find(queryOpt, options);
+    if(queryOpt.error)
+    {
+      return {error: queryOpt.error};
+    }
+    else
+    {
+      let weatherList = await weather.find(queryOpt, options);
 
-    return weatherList
-    ? weatherList.toArray()
-    : {
+      return weatherList
+      ? weatherList.toArray()
+      : {
         error: `We've encountered an error. Please try again later.`,
       };
+    }
+    
   }
   catch (err)
   {
@@ -68,13 +86,13 @@ function validateQueryObject(qryobj)
   if (qryobj.minAirTemp && qryobj.maxAirTemp)
   {
     // if both minAirTemp and maxAirTemp are valid numbers
-    if (!isNaN(qryobj.minAirTemp) && !isNaN(qryobj.maxAirTemp))
+    if (!isNaN(Number(qryobj.minAirTemp)) && !isNaN(Number(qryobj.maxAirTemp)))
     {
       query = {...query, "airTemperature.value": { $gte: Number(qryobj.minAirTemp), $lte: Number(qryobj.maxAirTemp) } };
     }
     else
       {
-        return {error: "Both minAirTemp and maxAirTemp must be valid numbers."};
+        query = {error: "Both minAirTemp and maxAirTemp must be valid numbers."};
       }
   }
   else
@@ -83,31 +101,29 @@ function validateQueryObject(qryobj)
     if (qryobj.minAirTemp)
     {
       //minAirTemp is a number
-      if (!isNaN(qryobj.minAirTemp))
+      if (!isNaN(Number(qryobj.minAirTemp)))
       {      
         query = {...query, "airTemperature.value": { $gte: Number(qryobj.minAirTemp) }};
       }
       else
-      {
-        return {error: "minAirTemp must be a number."};
+        query = {error: "minAirTemp must be a number."};
       }
     }
     if (qryobj.maxAirTemp)
     {
-      if (!isNaN(qryobj.maxAirTemp))
+      if (!isNaN(Number(qryobj.maxAirTemp)))
       {
         query = {...query, "airTemperature.value": {$lte: Number(qryobj.maxAirTemp) }};
       }
       else
       {
-        return {error: "maxAirTemp must be a float."};
+        query = {error: "maxAirTemp must be a number."};
       }
     }
     // if passed validation then return query string
     return query;
   }
 
-}
 //Create weather
 module.exports.create = async (newObj) => {
   const database = client.db(databaseName);

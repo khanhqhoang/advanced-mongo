@@ -94,7 +94,6 @@ router.get("/comments/:id([0-9a-fA-F]{24})", async(req, res) => {
     resultStatus = 404;
     res.status(resultStatus).send(result);
   }
-  console.log(resultStatus);
 })
 
 // curl -X POST -H "Content-Type: application/json" -d '{"title":"Llamas From Space", "plot":"Aliens..."}' http://localhost:5000/movies
@@ -142,7 +141,6 @@ router.put("/:id([0-9a-fA-F]{24})", async (req, res, err) => {
   try
   {
     const result = await movieData.updateById(req.params.id, req.body)
-    console.log(result);
     if(result.error){
       resultStatus = 400;
     } else {

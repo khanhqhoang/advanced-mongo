@@ -22,6 +22,22 @@ describe("GET /:callLetters", () => {
     expect(res.body.error).toBeDefined();
   });
 });
+//  curl "http://localhost:5000/weather/count/PLAT"
+describe("GET /count/:callLetters", () => {
+    it("should return count of weather entries that match callCenters on success", async () => {
+      weatherData.getWeatherCount.mockResolvedValue([{"_id":{"callLetters":"PLAT"},"Total_count_of_callLetters":528}]);
+      const res = await request(server).get("/weather/count/PLAT");
+      expect(res.statusCode).toEqual(200);
+      expect(Array.isArray(res.body)).toEqual(true);
+      expect(res.body.error).not.toBeDefined();
+    });
+    it("should return a status code of 422 if weather not found", async () => {
+      weatherData.getWeatherCount.mockResolvedValue({"error":"callLetters not found. Please try again."});
+      const res = await request(server).get("/weather/count/ZZZZ");
+      expect(res.statusCode).toEqual(422);
+      expect(res.body.error).toBeDefined();
+    });
+  });
 //curl "http://localhost:5000/weather?minAirTemp=5"
 
 describe("GET /", () => {

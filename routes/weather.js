@@ -24,6 +24,25 @@ router.get("/:callCenters", async (req, res, next) => {
     res.status(statusCode).send({ error: "Something went wrong. Please try again." });
   }
 });
+// extra credit work
+// get total count of weather entries group by callLetters
+// using aggregation
+
+router.get("/count/:callCenters", async (req, res, next) => {
+  let statusCode
+  let weatherCountList = await weatherData.getWeatherCount(req.params.callCenters);
+
+  if (weatherCountList.length>0) {
+    statusCode = 200
+    res.status(statusCode).send(weatherCountList);
+  } 
+  else 
+  {
+    statusCode = 422
+    // If weatherList is empty/null, something serious is wrong with the MongoDB connection.
+    res.status(statusCode).send({ error: "callLetters not found. Please try again." });
+  }
+});
 
 //get weather by one or more params
 //curl "http://localhost:5000/weather?minAirTemp=5"
@@ -36,9 +55,9 @@ router.get("/", async (req, res, next) => {
   // Validate for a valid url query param
   if (req.query)
   {
-    let weatherList = await weatherData.searchWeather(req.query);
 
-    if (weatherList) {
+    let weatherList = await weatherData.searchWeather(req.query);
+    if (weatherList.length>0) {
       resultStatus = 200
       res.status(resultStatus).send(weatherList);
     } 
