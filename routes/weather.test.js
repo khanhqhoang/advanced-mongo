@@ -16,7 +16,7 @@ describe("GET /:callLetters", () => {
     expect(res.body.error).not.toBeDefined();
   });
   it("should return a status code of 422 if movie not found", async () => {
-    weatherData.getWeather.mockResolvedValue(null);
+    weatherData.getWeather.mockResolvedValue({"error":"CallLetters not found. Please try again."});
     const res = await request(server).get("/weather/ZZZZ");
     expect(res.statusCode).toEqual(422);
     expect(res.body.error).toBeDefined();

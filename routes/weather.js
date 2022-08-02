@@ -13,7 +13,7 @@ router.get("/:callCenters", async (req, res, next) => {
   let statusCode
   let weatherList = await weatherData.getWeather(req.params.callCenters);
 
-  if (weatherList) {
+  if (weatherList.length > 0) {
     statusCode = 200
     res.status(statusCode).send(weatherList);
   } 
@@ -21,7 +21,7 @@ router.get("/:callCenters", async (req, res, next) => {
   {
     statusCode = 422
     // If weatherList is empty/null, something serious is wrong with the MongoDB connection.
-    res.status(statusCode).send({ error: "Something went wrong. Please try again." });
+    res.status(statusCode).send({ error: "CallLetter not found. Please try again." });
   }
 });
 // extra credit work
@@ -40,7 +40,7 @@ router.get("/count/:callCenters", async (req, res, next) => {
   {
     statusCode = 422
     // If weatherList is empty/null, something serious is wrong with the MongoDB connection.
-    res.status(statusCode).send({ error: "callLetters not found. Please try again." });
+    res.status(statusCode).send({ error: "CallLetters not found. Please try again." });
   }
 });
 
@@ -65,7 +65,7 @@ router.get("/", async (req, res, next) => {
     {
       // If weatherList is empty/null, something serious is wrong with the MongoDB connection.
       resultStatus = 500
-      res.status(resultStatus).send({ error: "Something went wrong. Please try again." });
+      res.status(resultStatus).send({ error: "CallLetters not found. Please try again." });
     }
   }
   else
