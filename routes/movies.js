@@ -137,7 +137,7 @@ router.post("/:id([0-9a-fA-F]{24})/comments", async(req, res) => {
 })
 
 // curl -X PUT -H "Content-Type: application/json" -d '{"title": "Shark...","plot":"Sharks..."}' http://localhost:5000/movies/573a13a3f29313caabd0e77b
-router.put("/:id([0-9a-fA-F]{24})", async (req, res, err) => {
+router.put("/:id([0-9a-fA-F]{2git 4})", async (req, res, err) => {
   let resultStatus;
   try
   {
