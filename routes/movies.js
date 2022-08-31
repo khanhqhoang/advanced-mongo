@@ -142,7 +142,7 @@ router.put("/:id([0-9a-fA-F]{24})", async (req, res, err) => {
   try
   {
     const result = await movieData.updateById(req.params.id, req.body)
-    //console.log(result);
+    console.log(result);
     if(result.error){
       resultStatus = 400;
     } else {
