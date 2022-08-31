@@ -1,4 +1,4 @@
-name: Deploy to Heroku
+name: Deploy action on Heroku
 
 on:
   push:
@@ -6,7 +6,18 @@ on:
       - khanh_heroku
 
 jobs:
-  build:
+  unit_testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+      - run: npm install
+      - run: npm test
+  deploy:
+    needs: unit_testing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
